@@ -391,8 +391,9 @@ func TestGetZhiByIndex(t *testing.T) {
 // TestGetDayGZByYearAndDate 測試日柱計算
 func TestGetDayGZByYearAndDate(t *testing.T) {
 	result := GetDayGZByYearAndDate(1995, 10, 1)
-	if len(result) != 2 {
-		t.Errorf("GetDayGZByYearAndDate 返回長度錯誤: %s", result)
+	// GetDayGZ 返回完整干支 (e.g., "辛亥")，中文字符每個3bytes，所以長度應為6
+	if len(result) != 6 {
+		t.Errorf("GetDayGZByYearAndDate 返回長度錯誤 (應為6): %s", result)
 	}
 }
 

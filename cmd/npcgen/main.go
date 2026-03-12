@@ -69,8 +69,7 @@ func PrintHelp() {
   npcgen --birth "1995-10-01 14:00"
   npcgen --birth "1995-10-01 14:00" --format json
   npcgen --birth "1995-10-01 14:00" --output npc.json
-  npcgen --birth "1995-10-01 14:00" --verbose
-`)
+  npcgen --birth "1995-10-01 14:00" --verbose`)
 }
 
 // PrintVersion 顯示版本訊息

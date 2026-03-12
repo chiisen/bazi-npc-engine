@@ -130,12 +130,12 @@ func GetMonthZhi(year, month, day int) string {
 //   - monthZhi: 月柱地支 (e.g., "寅")
 //
 // 回傳：
-//   - string: 月柱 (天干+地支)
+//   - string: 月柱天干 (e.g., "戊")
 //
 // 規則：五虎遁年起法
 // 甲己之年丙作首，乙庚之年戊為頭
 // 丙辛之年庚寅起，丁壬之年壬寅游
-// 戊癸之年甲寅上，月從正月選 Midlands
+// 戊癸之年甲寅上，月從正月選
 func GetMonthGan(yearGan, monthZhi string) string {
 	// 五虎遁年起法规则
 	// 根據年干決定正月的天干
@@ -152,12 +152,13 @@ func GetMonthGan(yearGan, monthZhi string) string {
 		"癸": "甲",
 	}
 
+	// 取得正月的天干
 	baseGan := monthGanMap[yearGan]
 	if baseGan == "" {
 		baseGan = "丙"
 	}
 
-	// 計算從正月到目標月份的偏移
+	// 找到寅月和目標地支的索引
 	// 子丑寅卯辰巳午未申酉戌亥
 	baseIndex := -1
 	for i, z := range DiZhi {
@@ -167,7 +168,6 @@ func GetMonthGan(yearGan, monthZhi string) string {
 		}
 	}
 
-	// 找到目標地支的索引
 	targetIndex := -1
 	for i, z := range DiZhi {
 		if z == monthZhi {
@@ -180,11 +180,28 @@ func GetMonthGan(yearGan, monthZhi string) string {
 		targetIndex = 0
 	}
 
-	// 計算天干偏移 (從寅月開始)
-	ganIndex := (baseIndex + targetIndex - 2) % len(TianGan)
-	if ganIndex < 0 {
-		ganIndex += len(TianGan)
+	// 計算從寅月開始的偏移量
+	// 寅月是第1個月，如果目標是卯月(第2個月)，天干向下推1位
+	offset := targetIndex - baseIndex
+	if offset < 0 {
+		offset += len(DiZhi)
 	}
+
+	// 從 baseGan 開始推算 offset 位
+	baseGanIndex := -1
+	for i, g := range TianGan {
+		if g == baseGan {
+			baseGanIndex = i
+			break
+		}
+	}
+
+	if baseGanIndex < 0 {
+		baseGanIndex = 0
+	}
+
+	// 計算目標天干索引
+	ganIndex := (baseGanIndex + offset) % len(TianGan)
 
 	return TianGan[ganIndex]
 }
