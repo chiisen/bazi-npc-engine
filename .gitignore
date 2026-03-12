@@ -62,6 +62,9 @@ coverage.*
 *.md
 !.gitignore
 !docs/README.md
+!TODO.md
+!PROJECT.md
+!CHANGELOG.md
 
 # ==============================================================================
 # 可能敏感的檔案
