@@ -11,6 +11,7 @@
   - `--model` 覆寫預設模型
   - `--api-key` 臨時指定金鑰（建議用環境變數）
   - 工廠函式 `llm.NewClient()` 統一處理設定解析
+  - **CLI 已串接 LLM 呼叫**（無 API key 時跳過；失敗時警告但不中斷）
 - `internal/llm/providers.go` 新增 Provider 預設表
 - `internal/llm/client.go` 新增 OpenAIClient 實作（從 generator.go 拆分）
 - 14 個新單元測試（provider 預設表 2 + client 錯誤路徑 5 + factory 路徑 7）

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/chiisen/bazi-npc-engine/internal/bazi"
+	"github.com/chiisen/bazi-npc-engine/internal/llm"
 	"github.com/chiisen/bazi-npc-engine/internal/npc"
 	"github.com/chiisen/bazi-npc-engine/internal/personality"
 )
@@ -90,8 +91,17 @@ func PrintVersion() {
 	fmt.Println("Bazi NPC Generator v0.1.0")
 }
 
+// NPCOutput JSON 輸出包裝結構
+//
+// 用於在 JSON 格式中同時包含 NPC 設定與 LLM 回應。
+// LLMResponse 使用 omitempty，未呼叫 LLM 時不輸出此欄位。
+type NPCOutput struct {
+	*npc.NPCProfile
+	LLMResponse string `json:"llm_response,omitempty"`
+}
+
 // PrintResult 輸出結果
-func PrintResult(npcProfile *npc.NPCProfile, baziData *bazi.Bazi, opts *CLIOptions) error {
+func PrintResult(npcProfile *npc.NPCProfile, baziData *bazi.Bazi, opts *CLIOptions, llmResponse string) error {
 	// 如果指定了輸出檔案
 	if opts.Output != "" {
 		file, err := os.Create(opts.Output)
@@ -103,7 +113,11 @@ func PrintResult(npcProfile *npc.NPCProfile, baziData *bazi.Bazi, opts *CLIOptio
 		if opts.Format == "json" {
 			encoder := json.NewEncoder(file)
 			encoder.SetIndent("", "  ")
-			err = encoder.Encode(npcProfile)
+			output := &NPCOutput{
+				NPCProfile:  npcProfile,
+				LLMResponse: llmResponse,
+			}
+			err = encoder.Encode(output)
 		} else {
 			// 將 text 輸出寫入檔案
 			var content string
@@ -137,6 +151,12 @@ func PrintResult(npcProfile *npc.NPCProfile, baziData *bazi.Bazi, opts *CLIOptio
 				}
 			}
 
+			if llmResponse != "" {
+				content += "\n=== LLM 回應 ===\n"
+				content += llmResponse
+				content += "\n"
+			}
+
 			_, err = file.WriteString(content)
 		}
 		return err
@@ -144,7 +164,11 @@ func PrintResult(npcProfile *npc.NPCProfile, baziData *bazi.Bazi, opts *CLIOptio
 
 	// 標準輸出
 	if opts.Format == "json" {
-		data, err := json.MarshalIndent(npcProfile, "", "  ")
+		output := &NPCOutput{
+			NPCProfile:  npcProfile,
+			LLMResponse: llmResponse,
+		}
+		data, err := json.MarshalIndent(output, "", "  ")
 		if err != nil {
 			return err
 		}
@@ -188,12 +212,53 @@ func PrintResult(npcProfile *npc.NPCProfile, baziData *bazi.Bazi, opts *CLIOptio
 			for col, shen := range baziData.TenGods {
 				fmt.Printf("  %s: %s\n", col, shen)
 			}
+			fmt.Println()
+		}
+
+		if llmResponse != "" {
+			fmt.Println("=== LLM 回應 ===")
+			fmt.Println(llmResponse)
 		}
 	}
 	return nil
 }
 
-// GenerateNPC 生成 NPC
+// callLLM 嘗試呼叫 LLM 並回傳回應。失敗時回傳空字串與錯誤（呼叫端決定如何處理）。
+//
+// 啟用條件：
+//   - Provider 名稱存在於 llm.DefaultProviders
+//   - 有 API key（CLI 參數或環境變數）
+//
+// 未啟用時回傳 ("", nil)；啟用後失敗回傳 ("", err)。
+func callLLM(opts *CLIOptions, npcProfile *npc.NPCProfile) (string, error) {
+	// 只有在 provider 已知時才嘗試
+	provider, ok := llm.DefaultProviders[opts.Provider]
+	if !ok {
+		return "", nil
+	}
+
+	// 檢查是否有 API key（CLI 參數或環境變數任一即可）
+	hasKey := opts.APIKey != "" || os.Getenv(provider.EnvVar) != ""
+	if !hasKey {
+		return "", nil
+	}
+
+	// 建立 LLM Client
+	client, err := llm.NewClient(llm.ClientConfig{
+		Provider: opts.Provider,
+		APIKey:   opts.APIKey,
+		Model:    opts.Model,
+	})
+	if err != nil {
+		return "", fmt.Errorf("建立 LLM Client 失敗（位置: main.go callLLM）: %v", err)
+	}
+
+	// 呼叫 LLM
+	prompt := llm.BuildSystemPrompt(npcProfile)
+	return client.Generate(prompt)
+}
+
+// GenerateNPC 生成 NPC 並（可選）呼叫 LLM
 func GenerateNPC(opts *CLIOptions) error {
 	// 解析出生時間
 	birthTime, err := time.Parse("2006-01-02 15:04", opts.Birth)
@@ -216,8 +281,14 @@ func GenerateNPC(opts *CLIOptions) error {
 	// 生成 NPC
 	npcProfile := npc.Generate(pers, opts.Seed)
 
+	// 嘗試呼叫 LLM（失敗不致命，僅警告）
+	llmResponse, llmErr := callLLM(opts, npcProfile)
+	if llmErr != nil {
+		log.Printf("WARN: LLM 呼叫失敗（位置: main.go GenerateNPC）: %v", llmErr)
+	}
+
 	// 輸出結果
-	return PrintResult(npcProfile, &baziData, opts)
+	return PrintResult(npcProfile, &baziData, opts, llmResponse)
 }
 
 // Run CLI 主流程
