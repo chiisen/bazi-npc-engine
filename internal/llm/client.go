@@ -5,8 +5,9 @@
 //   - 透過 LLMClient 介面支援多種 LLM 提供者
 //
 // 使用範例：
-//   client, _ := NewClient(ClientConfig{Provider: "openai", APIKey: "sk-..."})
-//   resp, _ := client.Generate(prompt)
+//
+//	client, _ := NewClient(ClientConfig{Provider: "openai", APIKey: "sk-..."})
+//	resp, _ := client.Generate(prompt)
 package llm
 
 import (

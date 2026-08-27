@@ -5,7 +5,8 @@
 //   - 透過 LLMClient 介面支援多種 LLM 提供者
 //
 // 使用範例：
-//   prompt := llm.BuildPrompt(npcProfile)
+//
+//	prompt := llm.BuildPrompt(npcProfile)
 package llm
 
 import (
