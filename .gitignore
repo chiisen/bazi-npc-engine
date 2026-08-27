@@ -65,6 +65,8 @@ coverage.*
 !TODO.md
 !PROJECT.md
 !CHANGELOG.md
+!docs/superpowers/specs/*.md
+!docs/superpowers/plans/*.md
 
 # ==============================================================================
 # 可能敏感的檔案
