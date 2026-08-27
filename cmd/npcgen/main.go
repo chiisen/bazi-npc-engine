@@ -18,13 +18,16 @@ import (
 
 // CLI 參數結構
 type CLIOptions struct {
-	Birth     string
-	Format    string
-	Output    string
-	Seed      int
-	Verbose   bool
-	Help      bool
-	Version   bool
+	Birth    string
+	Format   string
+	Output   string
+	Seed     int
+	Verbose  bool
+	Help     bool
+	Version  bool
+	Provider string
+	Model    string
+	APIKey   string
 }
 
 // ParseOptions 解析命令列選項
@@ -36,16 +39,22 @@ func ParseOptions() *CLIOptions {
 	verbose := flag.Bool("verbose", false, "顯示詳細資訊")
 	showHelp := flag.Bool("help", false, "顯示帮助訊息")
 	showVersion := flag.Bool("version", false, "顯示版本訊息")
+	provider := flag.String("provider", "openai", "LLM Provider (openai/opencode-go/MiniMax)")
+	model := flag.String("model", "", "LLM 模型名稱（覆寫 provider 預設）")
+	apiKey := flag.String("api-key", "", "LLM API 金鑰（測試用，建議用環境變數）")
 	flag.Parse()
 
 	return &CLIOptions{
-		Birth:   *birth,
-		Format:  *format,
-		Output:  *output,
-		Seed:    *seed,
-		Verbose: *verbose,
-		Help:    *showHelp,
-		Version: *showVersion,
+		Birth:    *birth,
+		Format:   *format,
+		Output:   *output,
+		Seed:     *seed,
+		Verbose:  *verbose,
+		Help:     *showHelp,
+		Version:  *showVersion,
+		Provider: *provider,
+		Model:    *model,
+		APIKey:   *apiKey,
 	}
 }
 
@@ -57,19 +66,23 @@ func PrintHelp() {
   npcgen [選項]
 
 選項：
-  --birth string    出生時間 (格式: YYYY-MM-DD HH:MM) [必填]
-  --format string   輸出格式 (json/text, 預設: text)
-  --output string   輸出檔案路徑 (預設: 標準輸出)
-  --seed int        隨機種子 (用於再現相同結果)
-  --verbose         顯示詳細八字資訊
-  --help            顯示幫助訊息
-  --version         顯示版本訊息
+  --birth string       出生時間 (格式: YYYY-MM-DD HH:MM) [必填]
+  --format string      輸出格式 (json/text, 預設: text)
+  --output string      輸出檔案路徑 (預設: 標準輸出)
+  --seed int           隨機種子 (用於再現相同結果)
+  --verbose            顯示詳細八字資訊
+  --provider string    LLM Provider (openai/opencode-go/MiniMax, 預設: openai)
+  --model string       LLM 模型名稱（覆寫 provider 預設）
+  --api-key string     LLM API 金鑰（測試用，建議用環境變數）
+  --help               顯示幫助訊息
+  --version            顯示版本訊息
 
 範例：
   npcgen --birth "1995-10-01 14:00"
   npcgen --birth "1995-10-01 14:00" --format json
   npcgen --birth "1995-10-01 14:00" --output npc.json
-  npcgen --birth "1995-10-01 14:00" --verbose`)
+  npcgen --birth "1995-10-01 14:00" --verbose
+  npcgen --birth "1995-10-01 14:00" --provider MiniMax`)
 }
 
 // PrintVersion 顯示版本訊息
@@ -220,6 +233,11 @@ func Run() int {
 	if opts.Version {
 		PrintVersion()
 		return 0
+	}
+
+	// 警告：明文傳入 API key
+	if opts.APIKey != "" {
+		log.Println("WARN: 不建議在 CLI 傳入金鑰，建議使用環境變數")
 	}
 
 	// 檢查出生時間是否提供
