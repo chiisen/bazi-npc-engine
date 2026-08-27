@@ -6,6 +6,14 @@
 ## [Unreleased] - 未發佈版本
 
 ### 新增
+- 多 LLM Provider 支援（OpenAI / OpenCode Go / MiniMax）
+  - `--provider` 旗標切換 provider
+  - `--model` 覆寫預設模型
+  - `--api-key` 臨時指定金鑰（建議用環境變數）
+  - 工廠函式 `llm.NewClient()` 統一處理設定解析
+- `internal/llm/providers.go` 新增 Provider 預設表
+- `internal/llm/client.go` 新增 OpenAIClient 實作（從 generator.go 拆分）
+- 14 個新單元測試（provider 預設表 2 + client 錯誤路徑 5 + factory 路徑 7）
 - 初始專案結構建立
 - 八字計算引擎設計
 - 人格生成器設計
