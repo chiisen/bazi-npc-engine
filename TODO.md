@@ -1,6 +1,6 @@
 # TODO 列表
 
-> 最後更新：2026-03-12
+> 最後更新：2026-08-27
 
 ## development in Progress
 
@@ -8,12 +8,13 @@
 - [x] 單元測試建立與修復
 - [x] CLI 工具強化 (--help, --version, --output)
 - [x] LLM 整合介面實作
+- [x] 多 LLM Provider 支援（OpenAI / OpenCode Go / MiniMax）
+- [x] CLI 串接 LLM 呼叫（無 API key 時略過，失敗時警告不中斷）
 
 ## 待辦事項
 
 ### 功能開發
 
-- [ ] LLM API 連線實作（OpenAI / OpenCode Go / MiniMax）— 設計規格見 docs/README.md
 - [ ] NPC Personality 生效邏輯優化
 - [ ] 背景故事生成引擎
 - [ ] 重要事件生成邏輯
@@ -40,6 +41,8 @@
 
 | 日期 | 完成項目 | Commit |
 |------|----------|--------|
+| 2026-08-27 | CLI 串接 LLM 呼叫 | 2bee75d |
+| 2026-08-27 | 多 LLM Provider 支援 | fad0a84 ~ ebc8fa7 |
 | 2026-03-12 | TODO.md 建立 | - |
 | 2026-03-12 | 單元測試修復 | f13a03e |
 | 2026-03-12 | CLI 強化 | cd02862 |
