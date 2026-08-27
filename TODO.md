@@ -13,7 +13,7 @@
 
 ### 功能開發
 
-- [ ] LLM API 連線實作（OpenAI/Anthropic 等）
+- [ ] LLM API 連線實作（OpenAI / OpenCode Go / MiniMax）— 設計規格見 docs/README.md
 - [ ] NPC Personality 生效邏輯優化
 - [ ] 背景故事生成引擎
 - [ ] 重要事件生成邏輯
